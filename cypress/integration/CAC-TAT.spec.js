@@ -15,7 +15,7 @@ describe('Central de Atendimento ao Cliente TAT', function() {
     })
     
     it('Preenche e envia formulário com sucesso', function (){
-        const longText= 'LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN LOREN IPSUN '
+        const longText = Cypress._.repeat('LOREN IPSUN ', 20)
         
         cy.get('#firstName').type('Avalon', {delay:0})
         cy.get('#lastName').type('Nadotti', {delay:0})
@@ -24,7 +24,7 @@ describe('Central de Atendimento ao Cliente TAT', function() {
         cy.get('#product').select(1)
         cy.get('input[type="radio"][value="feedback"]').check().should('be.checked')
         cy.get('#phone-checkbox').check().should('be.checked')
-        cy.get('#open-text-area').type(longText, {delay:0})
+        cy.get('#open-text-area').invoke('val', longText, {delay:0})
         cy.get('button[type="submit"]').click()
 
         cy.get('.success').should('be.visible')
@@ -89,9 +89,7 @@ describe('Central de Atendimento ao Cliente TAT', function() {
     it('marca cada tipo de contato', function(){
         cy.fillEachCheckBox()
         cy.fillMandatoryFieldsAndSubmit('Avalon', 'Nadotti', 'email@email.com', 'txtArea', 999999999)
-        cy.checkSuccess()
-        
-
+        cy.checkSuccessVisible()
     })
 
     it('teste de upload', function(){
@@ -125,6 +123,49 @@ describe('Central de Atendimento ao Cliente TAT', function() {
         cy.get('#privacy a').should('have.attr', 'target', '_blank')
     })
 
+    Cypress._.times(5, ()=> {
+        it('check Success Not Visible after 3 seconds', function(){
+            cy.clock()
+            cy.fillEachCheckBox()
+            cy.fillMandatoryFieldsAndSubmit('Avalon', 'Nadotti', 'email@email.com', 'txtArea', 999999999)
+            cy.checkSuccessVisible()
+            cy.tick(3000)
+            cy.checkSuccessNotVisible()
+        })
+    })
+    
+    it('Teste que exibe e esconde as mensagens de sucesso e erro usando o .invoke', ()=>{
+        cy.get('.success')
+            .should('not.be.visible')
+            .invoke('show')
+            .should('be.visible')
+            .and('contain', 'Mensagem enviada com sucesso.')
+            .invoke('hide')
+            .should('not.be.visible')
+        cy.get('.error')
+            .should('not.be.visible')
+            .invoke('show')
+            .should('be.visible')
+            .and('contain', 'Valide os campos obrigatórios!')
+            .invoke('hide')
+            .should('not.be.visible')
+    })
+    
+    it('Faz uma requisicao HTTP', ()=>{
+        cy.request('https://cac-tat.s3.eu-central-1.amazonaws.com/index.html')
+            .should(function(response){
+                const { status, statusText, body} = response
+                expect(status).to.equal(200)
+                expect(statusText).to.equal('OK')
+                expect(body).to.include('CAC TAT')
+            })
+    })
 
-
+    it.only('faz brotar um gatinho', ()=>{
+        cy.get('#cat')
+            .invoke('show')
+            .should('be.visible')
+        cy.get('#title')
+            .invoke('text', 'CAT TAT')
+    })
 })

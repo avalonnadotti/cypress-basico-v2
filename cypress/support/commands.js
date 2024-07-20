@@ -29,7 +29,11 @@ Cypress.Commands.add('fillEachCheckBox', function(nome, sobrenome, email, txtAre
 
 })
 
-Cypress.Commands.add('checkSuccess', function(){
+Cypress.Commands.add('checkSuccessVisible', function(){
 
     cy.get('.success').should('be.visible')
+})
+Cypress.Commands.add('checkSuccessNotVisible', function(){
+
+    cy.get('.success').should('not.be.visible')
 })
